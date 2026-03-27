@@ -1,8 +1,7 @@
 import http from "node:http";
 import https from "node:https";
-import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import axios from "axios";
-import { getServiceIdentifier, getVisRequestServer } from "./env";
+import { getVisRequestServer } from "./env";
 
 /**
  * Persistent axios instance with HTTP keep-alive to reuse TCP connections
@@ -41,40 +40,5 @@ export async function generateChartUrl(
     throw new Error(errorMessage);
   }
 
-  return resultObj;
-}
-
-type ResponseResult = {
-  metadata: unknown;
-  /**
-   * @docs https://modelcontextprotocol.io/specification/2025-03-26/server/tools#tool-result
-   */
-  content: CallToolResult["content"];
-  isError?: CallToolResult["isError"];
-};
-
-/**
- * Generate a map
- * @param tool - The tool name
- * @param input - The input
- * @returns
- */
-export async function generateMap(
-  tool: string,
-  input: unknown,
-): Promise<ResponseResult> {
-  const url = getVisRequestServer();
-
-  const response = await httpClient.post(url, {
-    serviceId: getServiceIdentifier(),
-    tool,
-    input,
-    source: "mcp-server-chart",
-  });
-  const { success, errorMessage, resultObj } = response.data;
-
-  if (!success) {
-    throw new Error(errorMessage);
-  }
   return resultObj;
 }
