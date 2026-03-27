@@ -27,6 +27,8 @@ export async function generateChartUrl(
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   options: Record<string, any>,
 ): Promise<string> {
+  // Security: VIS_REQUEST_SERVER is set via environment variable at deployment time,
+  // NOT from MCP tool input. This is an accepted risk — operators control the URL.
   const url = getVisRequestServer();
 
   const response = await httpClient.post(url, {

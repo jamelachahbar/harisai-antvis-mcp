@@ -12,6 +12,8 @@ export const startHTTPStreamableServer = async (
 ): Promise<void> => {
   const app = express();
   app.use(express.json());
+  // Security: CORS origin "*" is intentional — MCP servers are invoked by local
+  // clients (IDE extensions, CLI tools) that require unrestricted cross-origin access.
   app.use(cors({ origin: "*", exposedHeaders: ["Mcp-Session-Id"] }));
 
   app.post(endpoint, async (req: Request, res: Response) => {
