@@ -24,6 +24,11 @@ RUN npm run build
 
 # === Build final image ===
 FROM base AS final
+
+LABEL org.opencontainers.image.title="harisai-antvis-mcp"
+LABEL org.opencontainers.image.description="Haris AI MCP server for chart generation using AntV"
+LABEL org.opencontainers.image.source="https://github.com/jamelachahbar/harisai-antvis-mcp"
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/build ./build
 
@@ -31,5 +36,8 @@ COPY --from=builder /app/public ./public
 
 # If use docker-compose to execute this Dockerfile, this EXPOSE is a good choice.
 EXPOSE 1122
-# Command will be provided by smithery.yaml
-CMD ["node", "build/index.js", "-t", "streamable"]
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "const http = require('http'); http.get('http://localhost:1122/sse', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
+
+CMD ["node", "build/index.js", "-t", "sse", "-p", "1122"]
