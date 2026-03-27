@@ -3,9 +3,7 @@ import { getDisabledTools, getVisRequestServer } from "../../src/utils/env";
 
 describe("env", () => {
   it("default vis request server", () => {
-    expect(getVisRequestServer()).toBe(
-      "https://antv-studio.alipay.com/api/gpt-vis",
-    );
+    expect(getVisRequestServer()).toBe("");
   });
 
   it("modify vis request server by env", () => {
@@ -32,8 +30,7 @@ describe("env", () => {
   });
 
   afterEach(() => {
-    process.env.VIS_REQUEST_SERVER =
-      "https://antv-studio.alipay.com/api/gpt-vis";
+    process.env.VIS_REQUEST_SERVER = undefined;
     process.env.DISABLED_TOOLS = undefined;
   });
 });

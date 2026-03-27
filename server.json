@@ -1,9 +1,9 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.antvis/mcp-server-chart",
+  "name": "io.github.jamelachahbar/harisai-antvis-mcp",
   "description": "A Model Context Protocol server for generating charts using AntV.",
   "repository": {
-    "url": "https://github.com/antvis/mcp-server-chart",
+    "url": "https://github.com/jamelachahbar/harisai-antvis-mcp",
     "source": "github"
   },
   "version": "{{VERSION}}",
@@ -11,7 +11,7 @@
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
-      "identifier": "@antv/mcp-server-chart",
+      "identifier": "harisai-antvis-mcp",
       "version": "{{VERSION}}",
       "transport": {
         "type": "stdio"
@@ -19,18 +19,10 @@
       "environmentVariables": [
         {
           "name": "VIS_REQUEST_SERVER",
-          "description": "URL for the chart generation service. Defaults to the public AntV service, but can be overridden for private deployments.",
-          "default": "https://antv-studio.alipay.com/api/gpt-vis",
+          "description": "URL for the chart generation service. Must be set for chart rendering to work.",
           "isRequired": false,
           "format": "string",
           "isSecret": false
-        },
-        {
-          "name": "SERVICE_ID",
-          "description": "A unique identifier for your service, used for tracking chart generation records. This may be required for certain service levels or features.",
-          "isRequired": false,
-          "format": "string",
-          "isSecret": true
         },
         {
           "name": "DISABLED_TOOLS",

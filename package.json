@@ -1,5 +1,5 @@
 {
-  "name": "@antv/mcp-server-chart",
+  "name": "harisai-antvis-mcp",
   "description": "A Model Context Protocol server for generating charts using AntV. This is a TypeScript-based MCP server that provides chart generation capabilities. It allows you to create various types of charts through MCP tools.",
   "mcpName": "io.github.antvis/mcp-server-chart",
   "version": "0.9.10",
@@ -27,19 +27,16 @@
   "bin": {
     "mcp-server-chart": "./build/index.js"
   },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public"
-  },
+
   "files": ["build"],
   "keywords": ["antv", "mcp", "data-visualization", "chart", "graph", "map"],
   "repository": {
     "type": "git",
-    "url": "https://github.com/antvis/mcp-server-chart"
+    "url": "https://github.com/jamelachahbar/harisai-antvis-mcp"
   },
   "author": {
-    "name": "AntV",
-    "url": "https://antv.antgroup.com/"
+    "name": "Haris AI",
+    "url": "https://github.com/jamelachahbar"
   },
   "license": "MIT",
   "engines": {
