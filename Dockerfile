@@ -1,11 +1,10 @@
 FROM node:lts-alpine AS base
 WORKDIR /app
 
-# Create non-root user
+# Create non-root user (applied in final stage only)
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S appuser -u 1001 && \
     chown -R appuser:nodejs /app
-USER appuser
 
 # === Download production environment dependencies ===
 FROM base AS deps
@@ -24,6 +23,8 @@ RUN npm run build
 
 # === Build final image ===
 FROM base AS final
+
+USER appuser
 
 LABEL org.opencontainers.image.title="harisai-antvis-mcp"
 LABEL org.opencontainers.image.description="Haris AI MCP server for chart generation using AntV"
