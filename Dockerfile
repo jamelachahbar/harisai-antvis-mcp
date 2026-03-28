@@ -34,12 +34,24 @@ RUN addgroup -g 1001 -S nodejs && \
 # === Download production environment dependencies ===
 FROM base AS deps
 COPY package*.json ./
-RUN npm install --only=prod --no-audit --no-fund --no-optional && \
+# Increase Node memory limit and npm fetch timeouts for flaky networks
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+RUN npm config set fetch-timeout 300000 && \
+    npm config set fetch-retries 5 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm install --only=prod --no-audit --no-fund --no-optional && \
     npm cache clean --force
 
 FROM base AS builder
 COPY package*.json ./
-RUN npm install --no-audit --no-fund --no-optional
+# Increase Node memory limit and npm fetch timeouts
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+RUN npm config set fetch-timeout 300000 && \
+    npm config set fetch-retries 5 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm install --no-audit --no-fund --no-optional
 
 RUN mkdir -p public
 
