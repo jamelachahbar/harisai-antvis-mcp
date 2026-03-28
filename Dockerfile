@@ -3,17 +3,28 @@ WORKDIR /app
 
 # Install native dependencies for node-canvas (used by @antv/gpt-vis-ssr)
 # These are required both for building (npm install compiles native modules) and runtime
-RUN apk add --no-cache \
-    cairo-dev \
-    pango-dev \
-    jpeg-dev \
-    giflib-dev \
-    librsvg-dev \
-    pixman-dev \
-    build-base \
-    g++ \
-    make \
-    python3
+# Retry apk operations to handle transient network issues
+RUN for i in 1 2 3; do \
+        apk update && \
+        apk add --no-cache \
+            cairo-dev \
+            pango-dev \
+            jpeg-dev \
+            giflib-dev \
+            librsvg-dev \
+            pixman-dev \
+            build-base \
+            g++ \
+            make \
+            python3 && \
+        break || sleep 5; \
+    done && \
+    ln -sf /usr/bin/python3 /usr/bin/python && \
+    which python3 && python3 --version && \
+    which python && python --version
+
+# Set Python environment variable for node-gyp
+ENV PYTHON=/usr/bin/python3
 
 # Create non-root user (applied in final stage only)
 RUN addgroup -g 1001 -S nodejs && \
