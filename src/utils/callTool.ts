@@ -1,8 +1,11 @@
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import * as Charts from "../charts";
+import { chartStore } from "../services/chartStore";
+import { getVisRequestServer } from "./env";
 import { generateChartUrl } from "./generate";
 import { logger } from "./logger";
+import { renderChartToBuffer } from "./renderLocal";
 import { ValidateError } from "./validator";
 
 // Chart type mapping
@@ -75,19 +78,42 @@ export async function callTool(tool: string, args: object = {}) {
       }
     }
 
-    const url = await generateChartUrl(chartType, args);
-    logger.info(`Generated chart URL: ${url}`);
+    // Dual-mode rendering: Local (default) or Remote (if VIS_REQUEST_SERVER is set)
+    const visServer = getVisRequestServer();
+    let chartUrl: string;
+
+    if (visServer) {
+      // Remote mode (backward-compatible)
+      logger.info(`Using remote rendering via ${visServer}`);
+      chartUrl = await generateChartUrl(chartType, args);
+    } else {
+      // Local mode — render, store, serve
+      logger.info("Using local rendering");
+      const buffer = await renderChartToBuffer(
+        chartType,
+        args as Record<string, unknown>,
+      );
+      const chartId = chartStore.store(buffer);
+
+      // Use CHART_BASE_URL env var or construct from host/port
+      const baseUrl =
+        process.env.CHART_BASE_URL ||
+        `http://localhost:${process.env.PORT || "1122"}`;
+      chartUrl = `${baseUrl}/charts/${chartId}.png`;
+    }
+
+    logger.info(`Generated chart URL: ${chartUrl}`);
 
     return {
       content: [
         {
           type: "text",
-          text: url,
+          text: chartUrl,
         },
       ],
       _meta: {
         description:
-          "The content returned by MCP is the remote image URL of the visualization chart, which can be rendered using Markdown or HTML image tags. The _meta.spec content corresponds to the chart's configuration and spec, which can be rendered using AntV GPT-Vis chart components.",
+          "The content is a chart image URL that can be rendered using ![Chart](url) in markdown. The _meta.spec content corresponds to the chart's configuration and spec, which can be rendered using AntV GPT-Vis chart components.",
         spec: { type: chartType, ...args },
       },
     };

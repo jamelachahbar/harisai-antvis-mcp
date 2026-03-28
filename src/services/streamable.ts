@@ -2,6 +2,7 @@ import type { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import cors from "cors";
 import express, { type Request, type Response } from "express";
+import { chartsRouter } from "../routes/charts";
 import { logger } from "../utils/logger";
 
 export const startHTTPStreamableServer = async (
@@ -15,6 +16,9 @@ export const startHTTPStreamableServer = async (
   // Security: CORS origin "*" is intentional — MCP servers are invoked by local
   // clients (IDE extensions, CLI tools) that require unrestricted cross-origin access.
   app.use(cors({ origin: "*", exposedHeaders: ["Mcp-Session-Id"] }));
+
+  // Mount charts router for serving chart images
+  app.use(chartsRouter);
 
   app.post(endpoint, async (req: Request, res: Response) => {
     // In stateless mode, create a new transport for each request to prevent

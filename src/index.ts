@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+// IMPORTANT: This must be imported first to patch Module.prototype.require
+// before any other modules are loaded that might try to require CSS files
+import "./utils/moduleLoader";
+
 import { parseArgs } from "node:util";
 import {
   runHTTPStreamableServer,
