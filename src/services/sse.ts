@@ -1,6 +1,7 @@
 import type { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import express, { type Request, type Response } from "express";
+import { chartsRouter } from "../routes/charts";
 import { logger } from "../utils/logger";
 
 export const startSSEMcpServer = async (
@@ -11,6 +12,9 @@ export const startSSEMcpServer = async (
 ): Promise<void> => {
   const app = express();
   app.use(express.json());
+
+  // Mount charts router for serving chart images
+  app.use(chartsRouter);
 
   const connections: Record<string, SSEServerTransport> = {};
 
