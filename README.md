@@ -66,8 +66,39 @@ npx -y harisai-antvis-mcp --transport sse --port 1122
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `VIS_REQUEST_SERVER` | Chart rendering service URL (required for chart generation) | — |
+| `VIS_REQUEST_SERVER` | **(Optional)** External chart rendering service URL. When not set, charts are rendered locally using `@antv/gpt-vis-ssr` | — |
+| `CHART_BASE_URL` | Base URL for serving local chart images. Defaults to `http://localhost:${PORT}` | — |
 | `DISABLED_TOOLS` | Comma-separated list of tool names to disable | — |
+| `MCP_TRANSPORT` | Transport protocol: "stdio", "sse", or "streamable" | `stdio` |
+| `HOST` | Host for SSE or streamable transport | `localhost` |
+| `PORT` | Port for SSE or streamable transport | `1122` |
+| `MCP_ENDPOINT` | Endpoint path (SSE: "/sse", streamable: "/mcp") | — |
+
+## Chart Rendering Modes
+
+### Local Rendering (Default)
+
+When `VIS_REQUEST_SERVER` is **not set**, charts are rendered server-side using `@antv/gpt-vis-ssr`:
+
+- **No external dependencies** — Charts render completely offline
+- **PNG output** — High-quality images via Cairo/Pango
+- **In-memory caching** — Charts stored for 30 minutes with LRU eviction
+- **HTTP serving** — Charts available at `/charts/<uuid>.png`
+- **Backward compatible** — Tool responses still return image URLs
+
+**How it works:**
+1. MCP tool call → Render chart with `gpt-vis-ssr` → PNG buffer
+2. Store buffer in chart store → Generate UUID
+3. Return URL: `http://<host>:<port>/charts/<uuid>.png`
+4. Agent embeds `![Chart](url)` in response
+
+### Remote Rendering (Fallback)
+
+When `VIS_REQUEST_SERVER` **is set**, the original external rendering flow is used:
+
+- Charts sent to external rendering service
+- Returns remote HTTPS URLs (e.g., `https://mdn.alipayobjects.com/...`)
+- Useful for environments where native dependencies can't be installed
 
 ## CLI Options
 
