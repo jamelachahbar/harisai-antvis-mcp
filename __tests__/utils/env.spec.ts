@@ -3,7 +3,9 @@ import { getDisabledTools, getVisRequestServer } from "../../src/utils/env";
 
 describe("env", () => {
   it("default vis request server", () => {
-    expect(getVisRequestServer()).toBe("");
+    expect(() => getVisRequestServer()).toThrow(
+      "VIS_REQUEST_SERVER environment variable is not set",
+    );
   });
 
   it("modify vis request server by env", () => {

@@ -64,10 +64,31 @@ npx -y harisai-antvis-mcp --transport sse --port 1122
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `VIS_REQUEST_SERVER` | Chart rendering service URL (required for chart generation) | — |
-| `DISABLED_TOOLS` | Comma-separated list of tool names to disable | — |
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `VIS_REQUEST_SERVER` | Chart rendering service URL (required for chart generation) | — | **Yes** |
+| `DISABLED_TOOLS` | Comma-separated list of tool names to disable | — | No |
+
+### VIS_REQUEST_SERVER Configuration
+
+**Important:** The `VIS_REQUEST_SERVER` environment variable is **required** for chart generation to work. Without it, all chart generation requests will fail with an error.
+
+When deploying to Azure Container Apps or other container platforms, you must set this environment variable:
+
+**Azure Container Apps Example:**
+```bash
+az containerapp update \
+  --name harisai-antvis-mcp \
+  --resource-group your-resource-group \
+  --set-env-vars VIS_REQUEST_SERVER=https://your-render-service.com/api/chart
+```
+
+**Docker Example:**
+```bash
+docker run -d -p 1122:1122 \
+  -e VIS_REQUEST_SERVER=https://your-render-service.com/api/chart \
+  ghcr.io/jamelachahbar/harisai-antvis-mcp:latest
+```
 
 ## CLI Options
 

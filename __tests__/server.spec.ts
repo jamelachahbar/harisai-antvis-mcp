@@ -1,18 +1,65 @@
 import { spawn } from "node:child_process";
+import type http from "node:http";
 import { Client } from "@modelcontextprotocol/sdk/client";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createMockChartServer, stopMockServer } from "./helpers/mockServer";
+
+const MOCK_SERVER_PORT = 3456;
+const MOCK_VIS_SERVER = `http://localhost:${MOCK_SERVER_PORT}`;
+
+let mockServer: http.Server;
+
+// Set up mock chart server for all tests
+beforeAll(async () => {
+  mockServer = await createMockChartServer(MOCK_SERVER_PORT);
+  process.env.VIS_REQUEST_SERVER = MOCK_VIS_SERVER;
+});
+
+afterAll(async () => {
+  await stopMockServer(mockServer);
+});
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 function spawnAsync(command: string, args: string[]): Promise<any> {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args);
+    const child = spawn(command, args, {
+      env: { ...process.env, VIS_REQUEST_SERVER: MOCK_VIS_SERVER },
+    });
+
+    let output = "";
 
     child.stdout.on("data", (data) => {
-      resolve(child);
+      output += data.toString();
+      // Wait for the server to actually start
+      if (
+        output.includes("MCP Server started") ||
+        output.includes("SSE Server") ||
+        output.includes("Streamable HTTP")
+      ) {
+        // Give it a bit more time to fully initialize
+        setTimeout(() => resolve(child), 500);
+      }
     });
+
+    child.stderr.on("data", (data) => {
+      output += data.toString();
+      // Also check stderr for server start messages
+      if (
+        output.includes("MCP Server started") ||
+        output.includes("SSE Server") ||
+        output.includes("Streamable HTTP")
+      ) {
+        setTimeout(() => resolve(child), 500);
+      }
+    });
+
+    // Timeout after 10 seconds
+    setTimeout(() => {
+      reject(new Error(`Server did not start in time. Output: ${output}`));
+    }, 10000);
   });
 }
 
@@ -20,7 +67,8 @@ function spawnAsync(command: string, args: string[]): Promise<any> {
 function killAsync(child: any): Promise<void> {
   return new Promise((resolve, reject) => {
     child.on("exit", () => {
-      resolve();
+      // Add a small delay to ensure the port is fully released
+      setTimeout(resolve, 100);
     });
     child.kill();
   });
@@ -31,6 +79,7 @@ describe("MCP Server", () => {
     const transport = new StdioClientTransport({
       command: "ts-node",
       args: ["./src/index.ts"],
+      env: { ...process.env, VIS_REQUEST_SERVER: MOCK_VIS_SERVER },
     });
     const client = new Client({
       name: "stdio-client",
@@ -129,7 +178,7 @@ describe("MCP Server", () => {
     await client.connect(transport);
     const listTools = await client.listTools();
 
-    expect(listTools.tools.length).toBe(27);
+    expect(listTools.tools.length).toBe(24);
 
     const spec = {
       type: "line",
