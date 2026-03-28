@@ -60,12 +60,16 @@ describe("MCP Server", () => {
 
     expect(res._meta).toEqual({
       description:
-        "The content returned by MCP is the remote image URL of the visualization chart, which can be rendered using Markdown or HTML image tags. The _meta.spec content corresponds to the chart's configuration and spec, which can be rendered using AntV GPT-Vis chart components.",
+        "The content is a chart image URL that can be rendered using ![Chart](url) in markdown. The _meta.spec content corresponds to the chart's configuration and spec, which can be rendered using AntV GPT-Vis chart components.",
       spec: spec,
     });
 
     // @ts-expect-error ignore
-    expect(res.content[0].text.substring(0, 8)).toBe("https://");
+    // URL should start with http:// (local rendering) or https:// (remote)
+    const chartUrl = res.content[0].text;
+    expect(
+      chartUrl.startsWith("http://") || chartUrl.startsWith("https://"),
+    ).toBe(true);
   });
 
   it("sse", async () => {
@@ -103,12 +107,16 @@ describe("MCP Server", () => {
 
     expect(res._meta).toEqual({
       description:
-        "The content returned by MCP is the remote image URL of the visualization chart, which can be rendered using Markdown or HTML image tags. The _meta.spec content corresponds to the chart's configuration and spec, which can be rendered using AntV GPT-Vis chart components.",
+        "The content is a chart image URL that can be rendered using ![Chart](url) in markdown. The _meta.spec content corresponds to the chart's configuration and spec, which can be rendered using AntV GPT-Vis chart components.",
       spec: spec,
     });
 
     // @ts-expect-error ignore
-    expect(res.content[0].text.substring(0, 8)).toBe("https://");
+    // URL should start with http:// (local rendering) or https:// (remote)
+    const chartUrl = res.content[0].text;
+    expect(
+      chartUrl.startsWith("http://") || chartUrl.startsWith("https://"),
+    ).toBe(true);
 
     await killAsync(child);
   });
@@ -129,7 +137,7 @@ describe("MCP Server", () => {
     await client.connect(transport);
     const listTools = await client.listTools();
 
-    expect(listTools.tools.length).toBe(27);
+    expect(listTools.tools.length).toBe(24);
 
     const spec = {
       type: "line",
@@ -150,12 +158,16 @@ describe("MCP Server", () => {
 
     expect(res._meta).toEqual({
       description:
-        "The content returned by MCP is the remote image URL of the visualization chart, which can be rendered using Markdown or HTML image tags. The _meta.spec content corresponds to the chart's configuration and spec, which can be rendered using AntV GPT-Vis chart components.",
+        "The content is a chart image URL that can be rendered using ![Chart](url) in markdown. The _meta.spec content corresponds to the chart's configuration and spec, which can be rendered using AntV GPT-Vis chart components.",
       spec: spec,
     });
 
     // @ts-expect-error ignore
-    expect(res.content[0].text.substring(0, 8)).toBe("https://");
+    // URL should start with http:// (local rendering) or https:// (remote)
+    const chartUrl = res.content[0].text;
+    expect(
+      chartUrl.startsWith("http://") || chartUrl.startsWith("https://"),
+    ).toBe(true);
 
     await killAsync(child);
   });

@@ -1,6 +1,20 @@
 FROM node:22-alpine AS base
 WORKDIR /app
 
+# Install native dependencies for node-canvas (used by @antv/gpt-vis-ssr)
+# These are required both for building (npm install compiles native modules) and runtime
+RUN apk add --no-cache \
+    cairo-dev \
+    pango-dev \
+    jpeg-dev \
+    giflib-dev \
+    librsvg-dev \
+    pixman-dev \
+    build-base \
+    g++ \
+    make \
+    python3
+
 # Create non-root user (applied in final stage only)
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S appuser -u 1001 && \
@@ -9,12 +23,12 @@ RUN addgroup -g 1001 -S nodejs && \
 # === Download production environment dependencies ===
 FROM base AS deps
 COPY package*.json ./
-RUN npm install --only=prod --no-audit --no-fund --no-optional --ignore-scripts && \
+RUN npm install --only=prod --no-audit --no-fund --no-optional && \
     npm cache clean --force
 
 FROM base AS builder
 COPY package*.json ./
-RUN npm install --no-audit --no-fund --no-optional --ignore-scripts
+RUN npm install --no-audit --no-fund --no-optional
 
 RUN mkdir -p public
 
