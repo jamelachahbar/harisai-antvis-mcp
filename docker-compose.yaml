@@ -5,9 +5,11 @@ services:
       dockerfile: Dockerfile
     image: mcp-server-chart:stable
     container_name: mcp-server-chart-1
-    # environment:
-    #   - VIS_REQUEST_SERVER=http://127.0.0.1:3000/render
-    command: ["node", "build/index.js", "--transport", "sse", "--port", "1122", "--host", "0.0.0.0"]
+    environment:
+      - MCP_TRANSPORT=sse
+      - HOST=0.0.0.0
+      - PORT=1122
+      # - VIS_REQUEST_SERVER=http://127.0.0.1:3000/render
     ports:
       - "1122:1122"
 # networks:
