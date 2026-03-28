@@ -13,22 +13,22 @@ const { values } = parseArgs({
     transport: {
       type: "string",
       short: "t",
-      default: "stdio",
+      default: process.env.MCP_TRANSPORT || "stdio",
     },
     host: {
       type: "string",
       short: "h",
-      default: "localhost",
+      default: process.env.HOST || "localhost",
     },
     port: {
       type: "string",
       short: "p",
-      default: "1122",
+      default: process.env.PORT || "1122",
     },
     endpoint: {
       type: "string",
       short: "e",
-      default: "", // We'll handle defaults per transport type
+      default: process.env.MCP_ENDPOINT || "", // We'll handle defaults per transport type
     },
     help: {
       type: "boolean",
