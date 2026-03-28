@@ -1,25 +1,22 @@
-FROM node:22-alpine AS base
+FROM node:22-slim AS base
 WORKDIR /app
 
 # Install native dependencies for node-canvas (used by @antv/gpt-vis-ssr)
+# Using Debian instead of Alpine to avoid GCC 15.2 compilation issues with canvas
 # These are required both for building (npm install compiles native modules) and runtime
-# Retry apk operations to handle transient network issues
-RUN for i in 1 2 3; do \
-        apk update && \
-        apk add --no-cache \
-            cairo-dev \
-            pango-dev \
-            jpeg-dev \
-            giflib-dev \
-            librsvg-dev \
-            pixman-dev \
-            build-base \
-            g++ \
-            make \
-            python3 && \
-        break || sleep 5; \
-    done && \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        libcairo2-dev \
+        libpango1.0-dev \
+        libjpeg-dev \
+        libgif-dev \
+        librsvg2-dev \
+        libpixman-1-dev \
+        python3 \
+        pkg-config && \
     ln -sf /usr/bin/python3 /usr/bin/python && \
+    rm -rf /var/lib/apt/lists/* && \
     which python3 && python3 --version && \
     which python && python --version
 
@@ -27,8 +24,8 @@ RUN for i in 1 2 3; do \
 ENV PYTHON=/usr/bin/python3
 
 # Create non-root user (applied in final stage only)
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S appuser -u 1001 && \
+RUN groupadd -g 1001 nodejs && \
+    useradd -r -u 1001 -g nodejs appuser && \
     chown -R appuser:nodejs /app
 
 # === Download production environment dependencies ===
@@ -40,7 +37,8 @@ RUN npm config set fetch-timeout 300000 && \
     npm config set fetch-retries 5 && \
     npm config set fetch-retry-mintimeout 20000 && \
     npm config set fetch-retry-maxtimeout 120000 && \
-    npm install --only=prod --no-audit --no-fund --no-optional && \
+    npm install --only=prod --no-audit --no-fund --no-optional --ignore-scripts && \
+    npm rebuild canvas && \
     npm cache clean --force
 
 FROM base AS builder
@@ -51,7 +49,7 @@ RUN npm config set fetch-timeout 300000 && \
     npm config set fetch-retries 5 && \
     npm config set fetch-retry-mintimeout 20000 && \
     npm config set fetch-retry-maxtimeout 120000 && \
-    npm install --no-audit --no-fund --no-optional
+    npm install --no-audit --no-fund --no-optional --ignore-scripts
 
 RUN mkdir -p public
 
