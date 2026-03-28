@@ -43,15 +43,31 @@ if (values.help) {
 MCP Server Chart CLI
 
 Options:
-  --transport, -t  Specify the transport protocol: "stdio", "sse", or "streamable" (default: "stdio")
-  --host, -h       Specify the host for SSE or streamable transport (default: localhost)
-  --port, -p       Specify the port for SSE or streamable transport (default: 1122)
+  --transport, -t  Specify the transport protocol: "stdio", "sse", or "streamable"
+                   (default: "stdio" or $MCP_TRANSPORT)
+  --host, -h       Specify the host for SSE or streamable transport
+                   (default: "localhost" or $HOST)
+  --port, -p       Specify the port for SSE or streamable transport
+                   (default: 1122 or $PORT)
   --endpoint, -e   Specify the endpoint for the transport:
                    - For SSE: default is "/sse"
                    - For streamable: default is "/mcp"
+                   (or $MCP_ENDPOINT)
   --help, -H       Show this help message
   `);
   process.exit(0);
+}
+
+// Validate port value early so failures are easy to diagnose
+function parsePort(raw: string): number {
+  const port = Number.parseInt(raw, 10);
+  if (Number.isNaN(port) || port < 1 || port > 65535) {
+    console.error(
+      `Error: Invalid port "${raw}". Port must be a number between 1 and 65535.`,
+    );
+    process.exit(1);
+  }
+  return port;
 }
 
 // Run in the specified transport mode
@@ -59,14 +75,14 @@ const transport = values.transport.toLowerCase();
 
 if (transport === "sse") {
   logger.setIsStdio(false);
-  const port = Number.parseInt(values.port as string, 10);
+  const port = parsePort(values.port as string);
   // Use provided endpoint or default to "/sse" for SSE
   const endpoint = values.endpoint || "/sse";
   const host = values.host || "localhost";
   runSSEServer(host, port, endpoint).catch(console.error);
 } else if (transport === "streamable") {
   logger.setIsStdio(false);
-  const port = Number.parseInt(values.port as string, 10);
+  const port = parsePort(values.port as string);
   // Use provided endpoint or default to "/mcp" for streamable
   const endpoint = values.endpoint || "/mcp";
   const host = values.host || "localhost";

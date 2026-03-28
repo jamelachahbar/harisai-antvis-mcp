@@ -44,6 +44,6 @@ ENV PORT=1122
 EXPOSE 1122
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD node -e "const http = require('http'); http.get('http://localhost:1122/sse', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
+  CMD node -e "const http=require('http'); const port=parseInt(process.env.PORT||'1122',10); const transport=process.env.MCP_TRANSPORT||'sse'; const endpoint=process.env.MCP_ENDPOINT||(transport==='sse'?'/sse':'/mcp'); const req=http.get({hostname:'127.0.0.1',port,path:endpoint},(r)=>process.exit(r.statusCode===200?0:1)); req.on('error',()=>process.exit(1));"
 
 CMD ["node", "build/index.js"]
